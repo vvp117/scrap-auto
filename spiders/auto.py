@@ -39,31 +39,26 @@ class AutoSpider(scrapy.Spider):
 
         ix = 0
         for sel_item in list_auto:
-            item_data = AutoSpider.get_item_data(
+            list_item_data = AutoSpider.get_item_data(
                 sel_item,
                 AutoSpider.list_auto_xpaths
             ) 
 
             yield scrapy.Request(
-                url=item_data.pop('auto_url'),
+                url=list_item_data.pop('auto_url'),
                 callback=self.parse_auto,
-                cb_kwargs=item_data
+                cb_kwargs={'list_item_data':list_item_data}
                 )
 
             ix += 1
             if ix > AutoSpider.limit_pages:
                 break
 
-    def parse_auto(self, response, auto_title, engine_capacity, price):
-        list_item_data = {
-            'auto_title' : auto_title,
-            'engine_capacity' : engine_capacity,
-            'price' : price,
-        } 
+    def parse_auto(self, response, list_item_data):
         item_data = AutoSpider.get_item_data(
             response,
             AutoSpider.page_auto_xpaths
         )
-
         list_item_data.update(item_data)
+        
         yield list_item_data
