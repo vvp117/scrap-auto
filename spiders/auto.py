@@ -20,7 +20,8 @@ class AutoSpider(scrapy.Spider):
                         /div[@data-autodescription-container]/\
                             div[@data-triggers-container]/\
                                 div/\
-                                    div[1]/text()'
+                                    div[1]/text()',
+        'date' : '//div[@data-viewbull-views-counter]/text()[1]',
     }
 
     @classmethod

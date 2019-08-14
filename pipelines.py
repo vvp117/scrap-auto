@@ -16,5 +16,6 @@ class AutoPriceDromPipeline(object):
             item['engine_capacity'] = item['engine_capacity'].strip().split(' ')[0]
             item['price'] = int(item['price'].strip().replace('\xa0',''))
             item['power'] = item['power'].strip().split(' ')[0]
+            item['date'] = item['date'].strip().split(' ')[3]
 
         return item
