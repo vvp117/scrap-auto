@@ -1,4 +1,5 @@
 import scrapy
+import scrap_drom.items as items
 
 
 class AutoSpider(scrapy.Spider):
@@ -7,8 +8,8 @@ class AutoSpider(scrapy.Spider):
     start_urls = ['https://novosibirsk.drom.ru/nissan/tiida/']
 
     list_auto_xpaths = {
-        'auto_title' : './/div[@class="b-advItem__title"]/text()',
-        'auto_url' : '@href',
+        'title' : './/div[@class="b-advItem__title"]/text()',
+        'url' : '@href',
         'engine_capacity' : './/div[@data-ftid="sales__bulls-item_volume-power"]/text()',
         'price' : './/div[@data-ftid="sales__bulls-item_price"]/text()',
     }
@@ -22,29 +23,21 @@ class AutoSpider(scrapy.Spider):
         'date' : '//div[@data-viewbull-views-counter]/text()[1]',
     }
 
-    @classmethod
-    def get_item_data(cls, sel_item, xpaths):
-        return {
-            field : sel_item.xpath(xpath).get()
-            for field, xpath in xpaths.items()
-        }
-
     def parse(self, response):
         list_auto = response.xpath(
             '//div[@class="b-media-cont b-media-cont_modifyMobile_sm"]\
                 //a[@class="b-advItem"]'
         )
 
-        for sel_item in list_auto:
-            list_item_data = AutoSpider.get_item_data(
-                sel_item,
-                AutoSpider.list_auto_xpaths
+        for sel_item in list_auto: 
+            auto = items.Auto(
+                items.get_data(sel_item, AutoSpider.list_auto_xpaths)
             ) 
 
             yield scrapy.Request(
-                url=list_item_data.pop('auto_url'),
+                url=auto['url'],
                 callback=self.parse_auto,
-                cb_kwargs={'list_item_data':list_item_data}
+                cb_kwargs={'auto':auto}
                 )
 
         next_page = response.xpath(
@@ -56,11 +49,9 @@ class AutoSpider(scrapy.Spider):
         if next_page:
             yield response.follow(next_page, callback=self.parse)
 
-    def parse_auto(self, response, list_item_data):
-        item_data = AutoSpider.get_item_data(
-            response,
-            AutoSpider.page_auto_xpaths
+    def parse_auto(self, response, auto):
+        auto.update(
+            items.get_data(response, AutoSpider.page_auto_xpaths)
         )
-        list_item_data.update(item_data)
 
-        yield list_item_data
+        yield auto

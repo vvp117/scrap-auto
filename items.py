@@ -1,14 +1,36 @@
-# -*- coding: utf-8 -*-
-
-# Define here the models for your scraped items
-#
-# See documentation in:
-# https://doc.scrapy.org/en/latest/topics/items.html
-
 import scrapy
 
 
-class ScrapDromItem(scrapy.Item):
-    # define the fields for your item here like:
-    # name = scrapy.Field()
-    pass
+class Auto(scrapy.Item):
+
+    title = scrapy.Field()
+    url = scrapy.Field()
+    engine_capacity = scrapy.Field()
+    price = scrapy.Field()
+    power = scrapy.Field()
+    date = scrapy.Field()
+
+    def __setitem__(self, key, value):
+
+        if value:
+
+            if key == 'engine_capacity':
+                value = value.strip().split(' ')[0]
+            
+            elif key == 'price':
+                value = int(value.strip().replace('\xa0',''))
+            
+            elif key == 'power':
+                value = value.strip().split(' ')[0]
+            
+            elif key == 'date':
+                value = value.strip().split(' ')[3]
+
+        super().__setitem__(key, value)
+
+
+def get_data(data_source, xpaths):
+    return {
+        field : data_source.xpath(xpath).get()
+        for field, xpath in xpaths.items()
+    }
